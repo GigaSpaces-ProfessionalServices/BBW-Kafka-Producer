@@ -24,7 +24,10 @@
 >helm install bbw gigaspaces-repo-ea/xap-pu --version 16.3.0-m5
 
 ###4. Build BBW-kafka-producer code
+
 > cd ~/work/gigaspaces/BBW/BBW-kafka-producer
+
+> Edit bootstrap.servers value if you are using other than "kafka:9092" at BBW-Kafka-Producer/src/main/java/com/javatechie/k8s/ProducerCreator.java
 
 > mvn clean install
 
@@ -54,7 +57,6 @@
 >https://github.com/GigaSpaces-POCs/kafka-connector/tree/bbw-multi-records
 
 #### Verify Kafka and Space Configuration in values.yaml
->kafka-connector-bbw-multi-records/helm-chart/pluggable-connector/values.yaml
 
 ````
 e.g. ----------
@@ -70,11 +72,24 @@ space:
     group: xap-16.3.0
 ----------- 
 ````
+Location:
+>kafka-connector-bbw-multi-records/helm-chart/pluggable-connector/values.yaml
 
-#### Verify data-pipeline.yml
+
+#### Verify Topic name in data-pipeline.yml
+Note: If you are using 'bbw' topic name then you don't need to change anything in this file
 >kafka-connector-bbw-multi-records/helm-chart/pluggable-connector/files/data-pipeline.yml
 
-#### Verify deployment.yaml
+#### Verify Pipeline and Spring config location in  deployment.yaml file
+
+````
+- name: pipeline_config_location
+value: /mount/data-pipeline.yml
+- name: spring_config_location
+value: /mount/application.yml
+- name: spring_profiles_active'''
+````
+Location:
 >kafka-connector-bbw-multi-records/helm-chart/pluggable-connector/templates/deployment.yaml
 
 #### Install Pluggable Connectors

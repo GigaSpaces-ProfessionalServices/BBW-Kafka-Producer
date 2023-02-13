@@ -1,0 +1,78 @@
+# Default values for pluggable-connector-connector.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: yoramw/pluggable-connector
+ # pullPolicy: IfNotPresent
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+# tag: "0.1"
+  tag: "1.0.3"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+
+connector:
+# publish-errors set to true will publish messages that could not be written to space into an error topic (<topic-name>-errors)
+  publish-errors: true
+# Unique id of this pipeline - for future integrationwith spacedeck 
+  pipelineId: sp200
+# run-task-in-process controls if the data is writen with a remote space proxy (true), or with a task sent to each partition (false). At the moment, use only true!
+  run-task-in-process: false
+# pause-on-startup controls if the pluggable connector starts registering types and processing meesages upon startup
+  pause-on-startup: false
+# transactional-task controls if the write to the space is done under transaction. At the moment, set to false. Once run-task-in-process will enable tasks, we will support true
+  transactional-task: false
+
+influxdb:
+  url: http://influxdb:8086
+  database: db0
+  successMetric: taskmanager_job_task_operator_spaceName_typeName_operation_partitionId_pipelineId_spaceSuccessOperationNumber
+  failMetric: taskmanager_job_task_operator_spaceName_typeName_operation_partitionId_pipelineId_spaceFailedOperationNumber
+
+
+kafka:
+  bootstrapServers: kafka:9092
+  consumerGroup: DIH
+  max:
+    request:
+      size: 10485880
+space:
+  name: bbw
+  locators: xap-manager-hs
+  group: xap-16.3.0
+
+logging: 
+  level:
+    root: INFO
+    com:
+      gigaspaces:
+        connector: DEBUG
+
+service:
+  type: ClusterIP
+  port: 6085
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

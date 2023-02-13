@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pluggable-connector.fullname" . }}
+  labels:
+    {{- include "pluggable-connector.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "pluggable-connector.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "pluggable-connector.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: pipeline_config_location
+            value: /mount/data-pipeline.yml
+          - name: spring_config_location
+            value: /mount/application.yml
+          - name: spring_profiles_active
+            value: connector
+          - name: GS_LOOKUP_LOCATORS
+            value: {{ .Values.space.locators }}
+          - name: GS_LOOKUP_GROUPS
+            value: {{ .Values.space.group }}
+          ports:
+            - name: api
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /v1/status
+              port: {{ .Values.service.port }}
+          readinessProbe:
+            httpGet:
+              path: /v1/status
+              port: {{ .Values.service.port }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - name: app-config-volume
+            mountPath: /mount/application.yml
+            subPath: application.yml
+          - name: data-pipeline-config-volume
+            mountPath: /mount/data-pipeline.yml
+            subPath: data-pipeline.yml
+      volumes:
+        - name: app-config-volume
+          configMap:
+            name: {{ .Release.Name }}-application-configmap
+        - name: data-pipeline-config-volume
+          configMap:
+            name: {{ .Release.Name }}-data-pipeline-configmap
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

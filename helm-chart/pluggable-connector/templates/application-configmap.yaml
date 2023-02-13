@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-application-configmap
+data:
+  application.yml: |-
+    spring.kafka.bootstrap-servers: {{ .Values.kafka.bootstrapServers }}
+    spring.profiles: connector
+    spring.kafka.consumer-group: {{ .Values.kafka.consumerGroup }}
+   {{- with .Values.kafka.max }}
+    spring.kafka.max.request.size: {{ .request.size }}
+   {{- end }}
+   {{- with .Values.logging.level }}
+    logging.level.root: {{ .root }}
+    logging.level.com.gigaspaces.connector: {{ .com.gigaspaces.connector }}
+   {{- end }}
+    server.port: {{ .Values.service.port }}
+    space.name: {{ .Values.space.name }}
+    influxdb.url: {{ .Values.influxdb.url }}
+    influxdb.database: {{ .Values.influxdb.database }}
+    influxdb.success-metric: {{ .Values.influxdb.successMetric }}
+    influxdb.fail-metric: {{ .Values.influxdb.failMetric }}
+    pipelineId: {{ .Values.connector.pipelineId }}
+    publish-errors: {{ index .Values.connector "publish-errors" }}
+    run-task-in-process: {{ index .Values.connector "run-task-in-process" }}
+    pause-on-startup: {{ index .Values.connector "pause-on-startup" }}
+    transactional-task: {{ index .Values.connector "transactional-task" }}

@@ -8,5 +8,5 @@ spec:
     app: bbw-kafka-producer
   ports:
     - port: 8080
-      targetPort: 8080
+      targetPort: 8081
       name: app

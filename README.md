@@ -1,5 +1,16 @@
 # BBW Kafka Producer + Pluggable Connector
 
+## Summary
+
+Data pipeline to demonstrate data flow from Kafka topic to objects in Gigaspaces.
+This example showing json data produced to kafka and other side it is being consumed by pluggable connector which will parse incoming data and create objects to the space in Gigaspaces. 
+
+
+----------------
+
+## Steps
+
+
 ###1. Create Cluster on AWS EKS
 
 >eksctl create cluster --name bbwkafka --version 1.21 --region eu-west-2  --nodegroup-name standard-workers --node-type t3.large --nodes 3 --nodes-min 1 --nodes-max 3 --tags owner=niharkapadia,project=bbw
@@ -25,9 +36,9 @@
 
 ###4. Build BBW-kafka-producer code
 
-> cd ~/work/gigaspaces/BBW/BBW-kafka-producer
+> cd BBW-kafka-producer
 
-> Edit bootstrap.servers value if you are using other than "kafka:9092" at BBW-Kafka-Producer/src/main/java/com/javatechie/k8s/ProducerCreator.java
+Note: Edit 'bootstrap.servers' value if you are using other than "kafka:9092" at BBW-Kafka-Producer/src/main/java/com/javatechie/k8s/ProducerCreator.java
 
 > mvn clean install
 
@@ -39,22 +50,20 @@
 ###6. Deploy BBW-kafka-producer app to Kubernetes
 > kubectl delete deployments bbw-kafka-producer
 
-> kubectl apply -f /home/nihar/work/gigaspaces/BBW/BBW-kafka-producer/deployment.yaml
+Note: If you have different tag name in previous step then please update image: <your_image_with_tag> in  deployment.yaml
+> kubectl apply -f BBW-kafka-producer/deployment.yaml
 
 > kubectl delete svc bbw-kafka-producer-svc
 
-> kubectl apply -f /home/nihar/work/gigaspaces/BBW/BBW-kafka-producer/loadbalance.yaml
+> kubectl apply -f BBW-kafka-producer/loadbalance.yaml
 
+Note: If external ip is not assigned by loadbalancer then only do port forward 
 >  kubectl port-forward bbw-kafka-producer-86776859f9-vrttp 8081:8080
 
 ###7. Create Kafka Topic manually from redpanda Kafka-UI
 >Use topic name as 'bbw' and set configuration 'max.message.bytes=10485880'
 
 ###8. Install Pluggable Connector
-
-#### Download code from Git repository
-
->https://github.com/GigaSpaces-POCs/kafka-connector/tree/bbw-multi-records
 
 #### Verify Kafka and Space Configuration in values.yaml
 
@@ -73,12 +82,12 @@ space:
 ----------- 
 ````
 Location:
->kafka-connector-bbw-multi-records/helm-chart/pluggable-connector/values.yaml
+>BBW-Kafka-Producer/helm-chart/pluggable-connector/values.yaml
 
 
 #### Verify Topic name in data-pipeline.yml
 Note: If you are using 'bbw' topic name then you don't need to change anything in this file
->kafka-connector-bbw-multi-records/helm-chart/pluggable-connector/files/data-pipeline.yml
+>BBW-Kafka-Producer/helm-chart/pluggable-connector/files/data-pipeline.yml
 
 #### Verify Pipeline and Spring config location in  deployment.yaml file
 
@@ -90,10 +99,10 @@ value: /mount/application.yml
 - name: spring_profiles_active'''
 ````
 Location:
->kafka-connector-bbw-multi-records/helm-chart/pluggable-connector/templates/deployment.yaml
+>BBW-Kafka-Producer/helm-chart/pluggable-connector/templates/deployment.yaml
 
 #### Install Pluggable Connectors
->helm install bbwpc kafka-connector-bbw-multi-records/helm-chart/pluggable-connector
+>helm install bbwpc helm-chart/pluggable-connector
 
 #### To access Pluggable-Connector-UI from local (http://localhost:6085)
 >kubectl port-forward svc/bbwpc-pluggable-connector 6085:6085
@@ -109,9 +118,9 @@ Location:
 
 1. Get external ip for ' BBW-kafka-producer app' (use command 'Kubectl get service')
 2. Call REST url to push messages to kafka topic
-    > Rest: http://<external-ip>:8081/pushtokafka/<TOPIC_NAME>/<MESSAGE_COUNT>
+    > Rest: http://<<external-ip>>:8081/pushtokafka/<TOPIC_NAME>/<MESSAGE_COUNT>
    
-    > Example: http://<external-ip>:8081/pushtokafka/bbw/5
+    > Example: http://localhost:8081/pushtokafka/bbw/1
 
 #### After execution verification
 

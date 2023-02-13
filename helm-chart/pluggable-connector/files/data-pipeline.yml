@@ -1,0 +1,68 @@
+dataFormat: JSON
+
+spaceTypes:
+  - name: "stores"
+    dataSource:
+      topic: "bbw"
+      selector: "$.gtFinal[?(@.levelNbr == '01')]"
+    properties:
+      - name: "zzmallcode"
+        type: "String"
+        selector: ".zzmallcode"
+      - name: "ownerid"
+        type: "String"
+        selector: ".ownerid"
+      - name: "zzbrnd"
+        type: "String"
+        selector: ".zzbrnd"
+      - name: "eroed"
+        type: "String"
+        selector: ".eroed"
+      - name: "schld"
+        type: "String"
+        selector: ".schld"
+      - name: "kunnr"
+        type: "String"
+        selector: ".kunnr"
+        attributes: [ spaceid, routingkey ]
+
+  - name: "district"
+    dataSource:
+      topic: "bbw"
+      selector: "$.gtFinal[?(@.levelNbr == '02')]"
+    properties:
+      - name: "zzzclustertDescr"
+        type: "String"
+        attributes: [ spaceid, routingkey ]
+        selector: ".zzzclustertDescr"
+
+  - name: "region"
+    dataSource:
+      topic: "bbw"
+      selector: "$.gtFinal[?(@.levelNbr == '03')]"
+    properties:
+      - name: "zzzregiontDescr"
+        type: "String"
+        attributes: [ spaceid, routingkey ]
+        selector: ".zzzregiontDescr"
+
+  - name: "zone"
+    dataSource:
+      topic: "bbw"
+      selector: "$.gtFinal[?(@.levelNbr == '04')]"
+    properties:
+      - name: "zzzonetDescr"
+        type: "String"
+        attributes: [ spaceid, routingkey ]
+        selector: ".zzzonetDescr"
+
+  - name: "dist centers"
+    dataSource:
+      topic: "bbw"
+      selector: "$.gtFinal[?(@.levelNbr == '06')]"
+    properties:
+      - name: "zzstrnr2"
+        type: "String"
+        attributes: [ spaceid, routingkey ]
+        selector: ".zzstrnr2"
+

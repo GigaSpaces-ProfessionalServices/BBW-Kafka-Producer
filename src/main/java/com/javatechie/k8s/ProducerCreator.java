@@ -10,10 +10,10 @@ import java.util.Properties;
 
 public class ProducerCreator {
 
-	public static Producer<Long, String> createProducer() {
+	public static Producer<Long, String> createProducer(String kafkaBootstrapServers,String kafkaClientId) {
 		Properties props = new Properties();
-		props.put("bootstrap.servers", "kafka:9092");
-		props.put("client.id", "client1");
+		props.put("bootstrap.servers", kafkaBootstrapServers);
+		props.put("client.id", kafkaClientId);
 		props.put("key.serializer", LongSerializer.class.getName());
 		props.put("value.serializer", StringSerializer.class.getName());
 		props.put("max.request.size",100000000);

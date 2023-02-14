@@ -33,10 +33,16 @@ public class SpringbootK8sDemoApplication {
 	@Value("classpath:message.json")
 	Resource resource;
 
+	@Value("${BOOTSTRAP_SERVERS}")
+	private String kafkaBootstrapServers;
+
+	@Value("${CLIENT_ID}")
+	private String kafkaClientId;
+
 	@GetMapping("/message")
 	public String displayMessage(){
 		System.out.println(" ############ Hello world ####################");
-		return "Congratulation Nihar, you successfully deployed your application to kubernetes !!";
+		return "Congratulation Nihar, you successfully deployed your application to kubernetes !! Environment variables are BOOTSTRAP_SERVERS="+kafkaBootstrapServers+" , CLIENT_ID="+kafkaClientId;
 	}
 
 	@GetMapping("/pushtokafka/{topicName}/{count}")
@@ -51,7 +57,7 @@ public class SpringbootK8sDemoApplication {
 	public void runProducer(String topicName, long count) {
 		System.out.printf("########## Start sending "+count+" record(s) to Kafka topic '"+topicName+"'");
 
-		Producer<Long, String> producer = ProducerCreator.createProducer();
+		Producer<Long, String> producer = ProducerCreator.createProducer(kafkaBootstrapServers,kafkaClientId);
 		Gson gson = new Gson();
 		JsonObject bbwData=null;
 

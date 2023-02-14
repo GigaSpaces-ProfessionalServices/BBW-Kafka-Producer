@@ -31,7 +31,10 @@ This example showing json data produced to kafka and other side it is being cons
 #### To access Space deck from local (http://localhost:3000)
 >kubectl port-forward svc/spacedeck 3000:3000
 
-####  DEPLOY SPACE
+####  DEPLOY SPACE	
+
+>helm repo add gigaspaces-repo-ea http://resources.gigaspaces.com.s3.amazonaws.com/helm-charts-ea
+
 >helm install bbw gigaspaces-repo-ea/xap-pu --version 16.3.0-m5
 
 ###4. Build BBW-kafka-producer code
@@ -50,12 +53,13 @@ Note: Edit 'bootstrap.servers' value if you are using other than "kafka:9092" at
 ###6. Deploy BBW-kafka-producer app to Kubernetes
 > kubectl delete deployments bbw-kafka-producer
 
+Note: Edit 'BOOTSTRAP_SERVERS' as per your kafka location in configMap.yml file 
+> kubectl apply -f BBW-Kafka-Producer/configMap.yml
+
 Note: If you have different tag name in previous step then please update image: <your_image_with_tag> in  deployment.yaml
-> kubectl apply -f BBW-kafka-producer/deployment.yaml
+> kubectl apply -f BBW-Kafka-Producer/deployment.yaml
 
-> kubectl delete svc bbw-kafka-producer-svc
-
-> kubectl apply -f BBW-kafka-producer/loadbalance.yaml
+> kubectl apply -f BBW-Kafka-Producer/loadbalance.yaml
 
 Note: If external ip is not assigned by loadbalancer then only do port forward 
 >  kubectl port-forward bbw-kafka-producer-86776859f9-vrttp 8081:8080

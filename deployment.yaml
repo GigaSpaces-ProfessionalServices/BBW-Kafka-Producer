@@ -13,10 +13,20 @@ spec:
         app: bbw-kafka-producer
     spec:
       containers:
-        - name: bbw-kafka-producer
-          image: niharkapadia/bbw-kafka-producer:1.0
-          # Image that will be used to containers in the cluster
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8080
+      - env:
+        - name: BOOTSTRAP_SERVERS
+          valueFrom:
+            configMapKeyRef:
+              name: bbw-config
+              key: BOOTSTRAP_SERVERS
+        - name: CLIENT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: bbw-config
+              key: CLIENT_ID
+        image: niharkapadia/bbw-kafka-producer:1.0
+        imagePullPolicy: Always
+        name: bbw-kafka-producer
+        ports:
+        - containerPort: 8080
 # The port that the container is running on in the cluster

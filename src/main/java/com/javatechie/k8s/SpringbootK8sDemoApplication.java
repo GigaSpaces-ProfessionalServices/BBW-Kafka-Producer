@@ -3,8 +3,13 @@ package com.javatechie.k8s;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.CreateTopicsOptions;
+import org.apache.kafka.clients.admin.CreateTopicsResult;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.config.TopicConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,7 +28,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @SpringBootApplication
@@ -46,7 +51,8 @@ public class SpringbootK8sDemoApplication {
 	}
 
 	@GetMapping("/pushtokafka/{topicName}/{count}")
-	public String publishToKafka(@PathVariable String topicName,@PathVariable long count){;
+	public String publishToKafka(@PathVariable String topicName,@PathVariable long count){
+		createTopic(topicName);
 		runProducer(topicName,count);
 		return "Sent "+count+" record(s) to Kafka topic '"+topicName+"'";
 	}
@@ -54,6 +60,23 @@ public class SpringbootK8sDemoApplication {
 		SpringApplication.run(SpringbootK8sDemoApplication.class, args);
 	}
 
+	public void createTopic(String topicName){
+		System.out.printf("########## Creating New Topic with Name =  '"+topicName+"'");
+		Properties props = ProducerCreator.getKafkaProperties(kafkaBootstrapServers,kafkaClientId);
+		AdminClient adminClient = AdminClient.create(props);
+
+		Map<String, String> newTopicConfig = new HashMap<>();
+		newTopicConfig.put(TopicConfig.MAX_MESSAGE_BYTES_CONFIG, "10485880");
+
+		NewTopic newTopic = new NewTopic(topicName, 1, (short)1); //new NewTopic(topicName, numPartitions, replicationFactor)
+		newTopic.configs(newTopicConfig);
+
+		List<NewTopic> newTopics = new ArrayList<NewTopic>();
+		newTopics.add(newTopic);
+
+		adminClient.createTopics(newTopics);
+		adminClient.close();
+	}
 	public void runProducer(String topicName, long count) {
 		System.out.printf("########## Start sending "+count+" record(s) to Kafka topic '"+topicName+"'");
 

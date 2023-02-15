@@ -54,7 +54,7 @@ kafka:
     request:
       size: 10485880
 space:
-  name: bbw
+  name: bbw-dih-space
   locators: xap-manager-hs
   group: xap-16.3.0
 

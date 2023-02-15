@@ -35,7 +35,7 @@ This example showing json data produced to kafka and other side it is being cons
 
 >helm repo add gigaspaces-repo-ea http://resources.gigaspaces.com.s3.amazonaws.com/helm-charts-ea
 
->helm install bbw gigaspaces-repo-ea/xap-pu --version 16.3.0-m5
+>helm install bbw-dih-space gigaspaces-repo-ea/xap-pu --version 16.3.0-m5
 
 ###4. Build BBW-kafka-producer code
 

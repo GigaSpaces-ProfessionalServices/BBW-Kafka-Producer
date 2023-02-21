@@ -56,7 +56,7 @@ spaceTypes:
         attributes: [ spaceid, routingkey ]
         selector: ".zzzonetDescr"
 
-  - name: "dist centers"
+  - name: "dist_centers"
     dataSource:
       topic: "bbw"
       selector: "$.gtFinal[?(@.levelNbr == '06')]"

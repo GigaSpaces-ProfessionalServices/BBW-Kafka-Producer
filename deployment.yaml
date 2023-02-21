@@ -24,9 +24,30 @@ spec:
             configMapKeyRef:
               name: bbw-config
               key: CLIENT_ID
+        - name: AZURE_STORAGE_ACCOUNT_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: bbw-config
+              key: AZURE_STORAGE_ACCOUNT_NAME
+        - name: AZURE_STORAGE_ACCOUNT_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: bbw-config
+              key: AZURE_STORAGE_ACCOUNT_KEY
+        - name: AZURE_STORAGE_CONTAINER_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: bbw-config
+              key: AZURE_STORAGE_CONTAINER_NAME
+        - name: AZURE_STORAGE_MESSAGE_FILE
+          valueFrom:
+            configMapKeyRef:
+              name: bbw-config
+              key: AZURE_STORAGE_MESSAGE_FILE
         image: niharkapadia/bbw-kafka-producer:1.0
         imagePullPolicy: Always
         name: bbw-kafka-producer
         ports:
         - containerPort: 8080
 # The port that the container is running on in the cluster
+#image: bbwcontainerregistry.azurecr.io/bbw-kafka-producer:1.0

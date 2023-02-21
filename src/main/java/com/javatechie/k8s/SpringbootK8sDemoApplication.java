@@ -37,33 +37,44 @@ import java.util.concurrent.ExecutionException;
 @RestController
 public class SpringbootK8sDemoApplication {
 
-	@Value("classpath:message.json")
-	Resource resource;
-
 	@Value("${BOOTSTRAP_SERVERS}")
 	private String kafkaBootstrapServers;
 
 	@Value("${CLIENT_ID}")
 	private String kafkaClientId;
 
+	@Value("${AZURE_STORAGE_ACCOUNT_NAME}")
+	private String azureStorageAccountName;
+
+	@Value("${AZURE_STORAGE_ACCOUNT_KEY}")
+	private String azureStorageAccountKey;
+
+	@Value("${AZURE_STORAGE_CONTAINER_NAME}")
+	private String azureStorageContainerName;
+
+	@Value("${AZURE_STORAGE_MESSAGE_FILE}")
+	private String azureStorageMessageFile;
+
 	@GetMapping("/message")
 	public String displayMessage(){
-		System.out.println(" ############ Hello world ####################");
-		return "Congratulation Nihar, you successfully deployed your application to kubernetes !! Environment variables are BOOTSTRAP_SERVERS="+kafkaBootstrapServers+" , CLIENT_ID="+kafkaClientId;
+		return "Congratulation, you successfully deployed your application to kubernetes !! Environment variables are BOOTSTRAP_SERVERS="+kafkaBootstrapServers+" , CLIENT_ID="+kafkaClientId;
 	}
 
 	@GetMapping("/pushtokafka/{topicName}/{count}")
 	public String publishToKafka(@PathVariable String topicName,@PathVariable long count){
 		createTopic(topicName);
-		runProducer(topicName,count);
-		return "Sent "+count+" record(s) to Kafka topic '"+topicName+"'";
+		String response = runProducer(topicName,count);
+		if(response != null && response.equals("Success")) {
+			return "Sent " + count + " record(s) to Kafka topic '" + topicName + "'";
+		}else{
+			return "Sending failed to Kafka topic '" + topicName + "'.";
+		}
 	}
 	public static void main(String[] args) {
 		SpringApplication.run(SpringbootK8sDemoApplication.class, args);
 	}
 	@EventListener(ApplicationReadyEvent.class)
 	public void doSomethingAfterStartup() {
-		System.out.println("hello, I have just started up");
 		createTopic("bbw");
 	}
 
@@ -84,54 +95,47 @@ public class SpringbootK8sDemoApplication {
 		adminClient.createTopics(newTopics);
 		adminClient.close();
 	}
-	public void runProducer(String topicName, long count) {
+	public String runProducer(String topicName, long count) {
 		System.out.printf("########## Start sending "+count+" record(s) to Kafka topic '"+topicName+"'");
 
 		Producer<Long, String> producer = ProducerCreator.createProducer(kafkaBootstrapServers,kafkaClientId);
 		Gson gson = new Gson();
 		JsonObject bbwData=null;
+		String message = null;
+		try {
+			message=AzureBlobUtils.getFileData(azureStorageAccountName,azureStorageAccountKey
+					,azureStorageContainerName,azureStorageMessageFile);
+			if(message != null) {
+				bbwData = gson.fromJson(message, JsonObject.class);
+				JsonArray gtFinal = bbwData.getAsJsonArray("gtFinal");
+				System.out.println("Json Array: " + gtFinal.size());
+				System.out.println("Json Array 0th Ele: " + gtFinal.get(0));
+				//System.out.printf("Json Data: "+bbwData);
 
-		try (Reader reader = new FileReader(getFile())) {
-			bbwData = gson.fromJson(reader, JsonObject.class);
-			JsonArray gtFinal = bbwData.getAsJsonArray("gtFinal");
-			System.out.println("Json Array: "+gtFinal.size());
-			System.out.println("Json Array 0th Ele: "+gtFinal.get(0));
-			//System.out.printf("Json Data: "+bbwData);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		for (int index = 0; index < count; index++) {
-			final ProducerRecord<Long, String> record = new ProducerRecord<Long, String>(topicName,
-					bbwData.toString());
-			try {
-				RecordMetadata metadata = producer.send(record).get();
-				System.out.println("Record sent with key " + index + " to partition " + metadata.partition()
-						+ " with offset " + metadata.offset());
-			} catch (ExecutionException e) {
-				System.out.println("Error in sending record");
-				System.out.println(e);
-			} catch (InterruptedException e) {
-				System.out.println("Error in sending record");
-				System.out.println(e);
+				for (int index = 0; index < count; index++) {
+					final ProducerRecord<Long, String> record = new ProducerRecord<Long, String>(topicName,
+							bbwData.toString());
+					try {
+						RecordMetadata metadata = producer.send(record).get();
+						System.out.println("Record sent with key " + index + " to partition " + metadata.partition()
+								+ " with offset " + metadata.offset());
+					} catch (ExecutionException e) {
+						System.out.println("Error in sending record");
+						System.out.println(e);
+						return "Error";
+					} catch (InterruptedException e) {
+						System.out.println("Error in sending record");
+						System.out.println(e);
+						return "Error";
+					}
+				}
+			}else{
+				return "Error";
 			}
-		}
-	}
-	public File getFile(){
-		InputStream is = null;
-		try {
-			is = resource.getInputStream();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
+			return "Error";
 		}
-		File file = null;
-		try {
-			file = new File("message.json");
-			Files.copy(is, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		System.out.println("Is message.json file Exists: "+file.exists());
-		return file;
+		return "Success";
 	}
 }

@@ -42,9 +42,9 @@ connector:
 
 influxdb:
   url: http://influxdb:8086
-  database: db0
-  successMetric: taskmanager_job_task_operator_spaceName_typeName_operation_partitionId_pipelineId_spaceSuccessOperationNumber
-  failMetric: taskmanager_job_task_operator_spaceName_typeName_operation_partitionId_pipelineId_spaceFailedOperationNumber
+  database: mydb
+  successMetric: pluggable_connector_spaceSuccessOperationNumber
+  failMetric: pluggable_connector_spaceFailedOperationNumber
 
 
 kafka:
